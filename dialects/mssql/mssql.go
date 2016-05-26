@@ -12,9 +12,20 @@ import (
 )
 
 func setIdentityInsert(scope *gorm.Scope) {
-	if scope.Dialect().GetName() == "mssql" {
-		scope.NewDB().Exec(fmt.Sprintf("SET IDENTITY_INSERT %v ON", scope.TableName()))
-	}
+    if scope.Dialect().GetName() == "mssql" {
+
+	    //determine if identity insert must be on
+	    for _, b := range scope.PrimaryFields() {
+	        if b.IsBlank == false {
+	            scope.NewDB().Exec(fmt.Sprintf("SET IDENTITY_INSERT %v ON", scope.TableName()))
+	            return
+	        }
+	    }
+
+	    //turn off by default
+	    scope.NewDB().Exec(fmt.Sprintf("SET IDENTITY_INSERT %v OFF", scope.TableName()))
+	    
+    }
 }
 
 func init() {
